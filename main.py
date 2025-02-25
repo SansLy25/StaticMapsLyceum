@@ -1,7 +1,7 @@
 import sys
 
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QMainWindow, QApplication, QLabel
+from PyQt6.QtGui import QPixmap, qRgba
+from PyQt6.QtWidgets import QMainWindow, QApplication, QLabel, QRadioButton, QButtonGroup, QPushButton
 import requests
 
 PG_UP = 16777238
@@ -29,13 +29,21 @@ class MainWindow(QMainWindow):
         self.zoom = 15
         self.l0 = 37.530887
         self.l1 = 55.703118
-        self.spn0 = 0.02
-        self.spn1 = 0.02
         self.map_image_size = (600, 450)
 
     def setUpUI(self):
         self.image = QLabel(self)
         self.image.setGeometry(0, 0, 600, 450)
+        self.theme_group = QButtonGroup()
+        self.dark_theme_button = QPushButton("Темная тема")
+        self.dark_theme_button.move(800, 300)
+        self.white_theme_button = QRadioButton("Светлая тема")
+        self.theme_group.addButton(self.dark_theme_button, 1)
+        self.theme_group.addButton(self.white_theme_button, 2)
+        self.theme_group.buttonClicked.connect(self.onThemeChange)
+
+    def onThemeChange(self):
+        pass
 
     def getImage(self):
         map_params = {
@@ -60,47 +68,25 @@ class MainWindow(QMainWindow):
         key = event.key()
 
         if key == PG_UP:
-            self.pageUpPressed()
             if self.zoom <= 21:
                 self.zoom += 1
         elif key == PG_DOWN:
-            self.pageDownPressed()
             if self.zoom >= 0:
                 self.zoom -= 1
         elif key == RIGHT:
-            self.rightPressed()
+            if self.l0 <= 180:
+                self.l0 += 0.026
         elif key == LEFT:
-            self.leftPressed()
+            if self.l0 >= -180:
+                self.l0 -= 0.026
         elif key == DOWN:
-            self.downPressed()
+            if self.l1 >= -90:
+                self.l1 -= 0.011
         elif key == UP:
-            self.upPressed()
+            if self.l1 <= 90:
+                self.l1 += 0.011
 
         self.updateMapImage()
-
-    def updateMap(self):
-        pass
-
-    def upPressed(self):
-        pass
-
-    def downPressed(self):
-        pass
-
-    def leftPressed(self):
-        pass
-
-    def rightPressed(self):
-        pass
-
-    def leftPressed(self):
-        pass
-
-    def pageDownPressed(self):
-        pass
-
-    def pageUpPressed(self):
-        pass
 
 
 def except_hook(cls, exception, traceback):
