@@ -19,36 +19,54 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setGeometry(100, 100, 1200, 700)
+        self.setGeometry(100, 100, 600, 450)
         self.setWindowTitle("Карты")
         self.setUpUI()
-        self.getImage()
+        self.setUpMapParams()
+        self.updateMapImage()
+
+    def setUpMapParams(self):
+        self.zoom = 15
+        self.l0 = 37.530887
+        self.l1 = 55.703118
+        self.spn0 = 0.02
+        self.spn1 = 0.02
+        self.map_image_size = (600, 450)
 
     def setUpUI(self):
         self.image = QLabel(self)
-        self.image.setGeometry(0, 0, 1200, 700)
-
+        self.image.setGeometry(0, 0, 600, 450)
 
     def getImage(self):
         map_params = {
-            "ll": "37.530887,55.703118",
-            "spn": "0.02,0.02",
+            "ll": f"{self.l0},{self.l1}",
+            "size": f"{self.map_image_size[0]},{self.map_image_size[1]}",
+            "z": f"{self.zoom}",
             "apikey": APIKEY,
         }
+
         response = requests.get(MAP_API_SERVER, params=map_params)
-        print(response.url)
         with open("map.png", "wb") as file:
             file.write(response.content)
 
+    def updatePixmap(self):
         self.image.setPixmap(QPixmap("map.png"))
+
+    def updateMapImage(self):
+        self.getImage()
+        self.updatePixmap()
 
     def keyPressEvent(self, event):
         key = event.key()
 
         if key == PG_UP:
             self.pageUpPressed()
+            if self.zoom <= 21:
+                self.zoom += 1
         elif key == PG_DOWN:
             self.pageDownPressed()
+            if self.zoom >= 0:
+                self.zoom -= 1
         elif key == RIGHT:
             self.rightPressed()
         elif key == LEFT:
@@ -57,6 +75,8 @@ class MainWindow(QMainWindow):
             self.downPressed()
         elif key == UP:
             self.upPressed()
+
+        self.updateMapImage()
 
     def updateMap(self):
         pass
@@ -86,10 +106,10 @@ class MainWindow(QMainWindow):
 def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     sys.excepthook = except_hook
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
-
